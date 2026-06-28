@@ -9,6 +9,7 @@ import (
 	"sessions-based/internal/interfaces/services"
 	srvmocks "sessions-based/internal/interfaces/services/mock"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
@@ -341,7 +342,42 @@ func TestSaveSession(t *testing.T) {
 		success bool
 	}{
 		{
-			name: "save error",
+			name: "save session error",
+			data: "session-id",
+			setup: func(mockSession *srvmocks.MockSessionRepository) {
+				mockSession.EXPECT().SaveSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(ErrSaveSession)
+			},
+			wantErr: ErrSaveSession,
+			success: false,
 		},
+		{
+			name: "save session ok",
+			data: "session-id",
+			setup: func(mockSession *srvmocks.MockSessionRepository) {
+				mockSession.EXPECT().SaveSession(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+			},
+			wantErr: nil,
+			success: true,
+		},
+	}
+	for _, tc := range testCase {
+		t.Run(tc.name, func(t *testing.T) {
+			d := newDeps(t)
+			tc.setup(d.session)
+			err := d.session.SaveSession(context.Background(), tc.data, &models.Session{
+				UserID:    uuid.New(),
+				Email:     "bob1@gmail.com",
+				CreatedAt: time.Now(),
+			})
+
+			if !tc.success {
+				assert.Error(t, err)
+				if tc.wantErr != nil {
+					assert.ErrorIs(t, err, tc.wantErr)
+				}
+			} else {
+				assert.NoError(t, tc.wantErr)
+			}
+		})
 	}
 }
