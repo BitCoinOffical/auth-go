@@ -1,0 +1,49 @@
+services:
+
+
+  app:
+    build: ./
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d usersdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  
+  nginx:
+    image: nginx:latest
+    depends_on:
+      - app
+    volumes:
+        - ./nginx/conf:/etc/nginx/conf.d
+        - ./nginx/ssl:/etc/nginx/ssl
+        - ./nginx/static:/usr/share/nginx/html
+    ports:
+      - "80:80"
+      - "443:443"
+
+volumes:  
+  postgres_data:
+  redis_data:
