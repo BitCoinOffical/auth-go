@@ -16,10 +16,6 @@ import (
 	"time"
 )
 
-const (
-	migrationsDir = "./migrations"
-)
-
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -44,8 +40,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	migrations.RunMigrations(db, migrationsDir)
-	if err := migrations.RunMigrations(db, migrationsDir); err != nil {
+	migrations.RunMigrations(db)
+	if err := migrations.RunMigrations(db); err != nil {
 		log.Fatal(err)
 	}
 	srvs := handlers.NewServices(SessionRDB, LimitterRDB, db)
