@@ -3,10 +3,13 @@ package api
 import (
 	"context"
 	"net/http"
+	_ "sessions-based/docs"
 	"sessions-based/internal/api/handlers"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Middleware interface {
@@ -36,7 +39,7 @@ func NewServer(h *handlers.AuthHandler, middleware Middleware) *Server {
 }
 
 func (s *Server) Run() error {
-
+	s.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	auth := s.engine.Group("/auth")
 	{
 		auth.GET("/me", s.middleware.AuthMiddleware(), s.h.Me)

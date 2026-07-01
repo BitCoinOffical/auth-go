@@ -9,9 +9,7 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
-const (
-	migrationsDir = "../../../migrations"
-)
+const migrationsDir = "/app/migrations"
 
 func RunMigrations(pool *pgxpool.Pool) error {
 	db := stdlib.OpenDBFromPool(pool)
