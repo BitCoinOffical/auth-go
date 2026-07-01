@@ -29,23 +29,21 @@ func NewMiddleware(service AuthService, ratelimitter *redis.Client) *Middleware 
 
 func (m *Middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 1. достать session_id из cookie
 		sessionId, err := c.Cookie("session_id")
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		// 2. вызвать service.GetSession
-		// 3. если ошибка — вернуть 401 и c.Abort()
+
 		model, err := m.service.GetSession(c.Request.Context(), sessionId)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		// 4. положить сессию в контекст через c.Set
+
 		c.Set("session", model)
 		c.Next()
-		// 5. c.Next()
+
 	}
 }
 
